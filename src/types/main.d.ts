@@ -30,3 +30,15 @@ interface Auth {
   login: (userData: User) => Promise<void>;
   logout: () => Promise<void>;
 }
+
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+type SortOption = "breed" | "name" | "age";
+
+interface Sort {
+  option: SortOption;
+  descending: boolean;
+}

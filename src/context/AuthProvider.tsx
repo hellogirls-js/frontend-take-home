@@ -1,3 +1,4 @@
+import axios from "axios";
 import { createContext, useMemo, useState } from "react";
 
 type ContextType = Auth | null;
@@ -10,22 +11,23 @@ export const AuthProvider = ({ children }: { children: any }) => {
   const login = async (userData: User) => {
     console.log(JSON.stringify(userData));
     try {
-      await fetch("https://frontend-take-home-service.fetch.com/auth/login", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json;charset=UTF-8"
-      },
-      body: JSON.stringify(userData),
-      }).then((res) => {
-        if (res.status === 200) {
+      await axios.post("https://frontend-take-home-service.fetch.com/auth/login", {
+        name: userData.name,
+        email: userData.email,
+      }, {
+        headers: {
+          "Content-Type": "application/json;charset=UTF-8"
+        }, withCredentials: true
+      }).then((response) => {
+        if (response.status === 200) {
           setUser(userData);
           return user;
         } else {
-          throw Error(`${res.status}: Invalid request`);
+          throw new Error(`${response.status}: Login failed`);
         }
       }).catch((error) => {
-        console.error(error);
-      });
+        console.error("Could not login: ", error);
+      })
     } catch (error) {
       console.error("Could not login: ", error);
     }
@@ -33,20 +35,18 @@ export const AuthProvider = ({ children }: { children: any }) => {
 
   const logout = async () => {
     try {
-      await fetch("https://frontend-take-home-service.fetch.com/auth/logout", {
-        method: "POST",
+      await axios.post("https://frontend-take-home-service.fetch.com/auth/logout", {}, {
         headers: {
-          "content-type": "application/json;charset=UTF-8",
-        },
-        credentials: "include"
+          "Content-Type": "application/json"
+        }, withCredentials: true
       }).then((res) => {
         if (res.status === 200) {
           setUser(null);
         } else {
-          throw Error(`${res.status}: Invalid request`);
+          throw new Error(`${res.status}: Logout failed`);
         }
       }).catch((error) => {
-        console.error(error);
+        console.error("Could not logout: ", error);
       })
     } catch (error) {
       console.error("Could not logout: ", error);

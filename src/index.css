@@ -4,7 +4,20 @@
   --shadow: #d4d3db;
 }
 
+@keyframes clickButton {
+  0% { transform: scale(1) }
+  75% { transform: scale(1.3) }
+  90% { transform: scale(1.25) }
+  100% { transform: scale(1) }
+}
+
+html, body, #root, .App {
+  min-height: 100vh;
+}
+
 body {
+  min-height: 100%;
+  height: 100vh;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -14,6 +27,12 @@ body {
   background-color: #f4f4f8;
   color: #313038;
   font-size: 14px;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 code {
@@ -32,6 +51,7 @@ textarea:focus, input:focus {
 }
 
 header {
+  flex: 0 1 10%;
   padding: 1% 1%;
   background-color: #fff;
   box-shadow: 0px 2px 3px var(--shadow);
@@ -47,6 +67,10 @@ header {
   color: #689bd6;
 }
 
+.page {
+  flex: 1 0 80%;
+}
+
 header h1 {
   font-weight: 800;
 }
@@ -56,17 +80,18 @@ header h1 {
   width: 100%;
 }
 
-.textbox-container label {
+label {
   font-size: 0.9rem;
 }
 
-.textbox-container label.default {
+label.default {
   display: block;
   margin-bottom: 1%;
 }
 
-.textbox-container label.inline {
+label.inline {
   display: inline;
+  margin-right: 1%;
 }
 
 .textbox-container .textbox {
@@ -88,6 +113,15 @@ header h1 {
   font-weight: bold;
 }
 
+.dropdown {
+  width: 80%;
+  padding: 0.5%;
+  border: 1px solid #d4d3db;
+  color: #6a6583;
+  background-color: #fff;
+  border-radius: 5px;
+}
+
 #login-container {
   margin: auto;
   margin-top: 5%;
@@ -100,18 +134,21 @@ header h1 {
 }
 
 #container {
+  margin: auto;
+  width: 87%;
   display: flex;
   flex-flow: row nowrap;
 }
 
 #filter-menu {
   position: sticky;
+  height: 70vh;
   flex: 0 1 17%;
   background-color: #fff;
   margin-top: 2%;
   top: 2%;
   padding: 2%;
-  border-radius: 0px 10px 10px 0px;
+  border-radius: 10px;
   box-shadow: 2px 2px 3px var(--shadow);
 }
 
@@ -120,16 +157,160 @@ header h1 {
 }
 
 #main-content {
+  flex: 1 0 80%;
+  max-width: 83%;
   padding: 2%;
 }
 
+#main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2%;
+}
+
 #main-title {
+  flex-basis: 50%;
   font-size: 2rem;
+}
+
+#main-header .select-container {
+  flex-basis: 50%;
+}
+
+#main-header label, #main-header .dropdown {
+  font-size: 1.1rem;
+}
+
+#puppy-grid {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: flex;
+  flex-flow: row wrap;
+  gap: 2%;
+}
+
+#puppy-grid .puppy-tile {
+  width: 23%;
+  margin-bottom: 2%;
+  display: flex;
+  flex-flow: column nowrap;
+  background-color: #fff;
+  box-shadow: 2px 2px 3px var(--shadow);
+  border-radius: 10px;
+}
+
+#puppy-grid .puppy-tile-img {
+  height: 250px;
+}
+
+#puppy-grid .puppy-tile-img img {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: 5px 5px 2px 2px;
+}
+
+.puppy-tile-info {
+  width: 92%;
+  margin-top: 2%;
+  padding: 4%;
+}
+
+.puppy-tile-info-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.puppy-tile-info h3 {
+  font-size: 1.7rem;
+  flex-basis: 20%;
+}
+
+.puppy-tile-star {
+  cursor: pointer;
+  transition: transform 0.3s, color 0.1s;
+}
+
+.puppy-tile-star.default {
+  color: #afa9ce;
+}
+
+.puppy-tile-star.selected {
+  color: #4e7cc0;
+  animation: clickButton 0.3s linear 0s 1 forwards;
+}
+
+.puppy-info-basic {
+  display: flex;
+  gap: 2%;
+}
+
+.puppy-tile-info-sec {
+  display: flex;
+  align-items: center;
+  gap: 3%;
+  width: 98%;
+  border-radius: 20px;
+  border: 1px solid #d8d4eb;
+  margin: 3% 0%;
+  padding: 1%;
+}
+
+.puppy-info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: #7da7d8;
+  border-radius: 50%;
+  width: 23px;
+  height: 23px;
+  padding: 2px;
+}
+
+#pagination {
+  width: 100%;
+  margin-top: 2%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#pagination .pagination-button {
+  display: flex;
+  align-items: center;
+  gap: 10%;
+  background: #4e7cc0;
+  color: #fff;
+  padding: 0.5% 1%;
+  width: 15%;
+  border-radius: 5px;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+#footer {
+  flex: 0 1 10%;
+  align-self: flex-end;
+  width: 94%;
+  bottom: 0;
+  margin-top: 2%;
+  font-size: 0.8rem;
+  background-color: #e5e3f3;
+  color: #9189b8;
+  padding: 1% 3% 3% 3%;
 }
 
 @media screen and (max-width: 768px) {
   #login-container {
     margin-top: 10%;
     width: 85%;
+  }
+
+  #puppy-grid {
+    display: block;
   }
 }

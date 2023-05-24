@@ -9,6 +9,7 @@ import { AuthProvider } from './context/AuthProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './components/Home';
+import Footer from './layout/Footer';
 
 const router = createBrowserRouter([
   {
@@ -35,7 +36,10 @@ root.render(
     <AuthProvider>
       <div className="App">
         <Header />
-        <RouterProvider router={router} />
+        <main className="page">
+          <RouterProvider router={router} />
+        </main>
+        <Footer />
       </div>
     </AuthProvider>
   </React.StrictMode>
