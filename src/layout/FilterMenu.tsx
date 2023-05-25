@@ -1,23 +1,10 @@
 import { useEffect, useState } from "react";
 import Select from "../components/utility/Select";
-import { IconX } from "@tabler/icons-react";
+import { IconChevronUp, IconX } from "@tabler/icons-react";
 import TextInput from "../components/utility/TextInput";
 import ErrorAlert from "../components/utility/ErrorAlert";
 import Button from "../components/utility/Button";
-
-function Accordion({ title, children }: { title: string; children?: any; }) {
-  return (
-    <div className="accordion">
-      <div className="accordion-title">
-        <div className="accordion-title-name">{title}</div>
-        <div className="accordion-title-arrow"></div>
-      </div>
-      <div className="accordion-content">
-        {children}
-      </div>
-    </div>
-  )
-}
+import { useMediaQuery } from "@mantine/hooks";
 
 function FilterPill({ children, data, changeData }: {children: string, data: any[]; changeData: any; }) {
   /**
@@ -67,6 +54,7 @@ export default function FilterMenu(
   }
 ) {
   const [breedSelect, setBreedSelect] = useState<string>();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
     if (breedSelect !== undefined) {
@@ -183,14 +171,38 @@ export default function FilterMenu(
     );
   }
 
+  function FilterMenuMobile() {
+    const [open, setOpen] = useState<boolean>(false);
+
+    return (
+      <nav id="filter-menu-mobile">
+        <div id="filter-menu-header" onClick={() => setOpen(!open)}>
+          <h2 id="filter-title-mobile">Filter</h2>
+          <div id="filter-menu-icon" className={open ? "open" : "closed"}><IconChevronUp /></div>
+        </div>
+        <div id="filter-content" className={open ? "show" : "hide"}>
+          <BreedFilter />
+          <ZipcodeFilter />
+          <AgeFilter />
+        </div>
+      </nav>
+    );
+  }
+
+  function FilterMenuDesktop() {
+    return (
+      <nav id="filter-menu">
+        <h2 id="filter-title">Filter</h2>
+        <div id="filter-content">
+          <BreedFilter />
+          <ZipcodeFilter />
+          <AgeFilter />
+        </div>
+      </nav>
+    )
+  }
+
   return (
-    <nav id="filter-menu">
-      <h2>Filter</h2>
-      <div id="filter-content">
-        <BreedFilter />
-        <ZipcodeFilter />
-        <AgeFilter />
-      </div>
-    </nav>
+    isMobile ? <FilterMenuMobile /> : <FilterMenuDesktop />
   );
 }

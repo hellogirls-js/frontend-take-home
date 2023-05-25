@@ -97,7 +97,8 @@ header h1 {
 
 .textbox-container.default {
   display: block;
-  width: 98%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .textbox-container.inline {
@@ -124,6 +125,10 @@ label.inline {
   border-radius: 5px;
   border: 1px solid #d4d3db;
   color: #6a6583;
+}
+
+.textbox-container .textbox:focus {
+  border: 1px solid #4e7cc0;
 }
 
 .textbox-container .textbox.default {
@@ -168,6 +173,10 @@ label.inline {
 .select-container .select-icon-container.with-icon .dropdown {
   border-radius: 5px 0px 0px 5px;
   border-right: none;
+}
+
+.select-container .select-icon-container .dropdown:focus {
+  border: 1px solid #4e7cc0;
 }
 
 .select-container .select-icon-container .select-icon {
@@ -613,5 +622,75 @@ label.inline {
   .pagination .pagination-button {
     width: 40%;
     padding: 3% 5%;
+  }
+
+  #filter-menu-mobile {
+    margin: auto;
+    position: sticky;
+    top: 2%;
+    margin-top: 2%;
+    z-index: 10;
+    width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    box-shadow: 2px 2px 3px var(--shadow);
+    padding: 3%;
+    border-radius: 10px;
+  }
+
+  #filter-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+
+  #filter-menu-header #filter-menu-icon {
+    transition: transform 0.2s;
+  }
+
+  #filter-menu-header #filter-menu-icon.open {
+    transform: rotate(180deg);
+  }
+
+  #filter-menu-header #filter-menu-icon.closed {
+    transform: rotate(0deg);
+  }
+
+  #filter-content {
+    transition: all 0.5s ease-in-out;
+    overflow: hidden;
+  }
+
+  #filter-content.hide {
+    max-height: 0px;
+    height: 0px;
+  }
+
+  #filter-content.show {
+    max-height: auto;
+    height: auto;
+  }
+
+  #match-button {
+    width: 20vh;
+    height: 20vh;
+  }
+
+  #match-info {
+    display: block;
+  }
+
+  #match-img {
+    width: 100%;
+  }
+
+  #match-summary {
+    margin-top: 5%;
+  }
+
+  #match-buttons, .match-point {
+    width: 100%;
+    box-sizing: border-box;
   }
 }

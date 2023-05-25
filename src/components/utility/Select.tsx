@@ -37,9 +37,9 @@ export default function Select(
 
   return (
     <div className="select-container">
-      <label htmlFor={id} className={`form-label ${inline ? "inline" : "default"}`}>{label}</label>
+      <label htmlFor={id} className={`form-label ${inline ? "inline" : "default"}`} aria-label={label}>{label}</label>
       <div className={`${"select-icon-container"}${icon ? " with-icon" : ""}`}>
-        <select className="dropdown" id={id} value={defaultValue || ""} onChange={onChangeSelect}>
+        <select className="dropdown" id={id} value={defaultValue || ""} onChange={onChangeSelect} aria-label={label}>
           {placeholder && <option value="" disabled>{placeholder}</option>}
           {data.map((choice: SelectOption) => 
             <option value={choice.value} key={choice.value}>{choice.label}</option>
