@@ -9,7 +9,6 @@ export const AuthProvider = ({ children }: { children: any }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async (userData: User) => {
-    console.log(JSON.stringify(userData));
     try {
       await axios.post("https://frontend-take-home-service.fetch.com/auth/login", {
         name: userData.name,

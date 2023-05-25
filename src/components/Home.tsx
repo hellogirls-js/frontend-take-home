@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { IconArrowLeft, IconArrowRight, IconCake, IconDog, IconMapPin, IconStar } from "@tabler/icons-react";
 import Select from "./utility/Select";
+import MatchButton from "../layout/MatchButton";
 
 const BASE_URL = "https://frontend-take-home-service.fetch.com";
 
@@ -13,20 +14,47 @@ const BASE_URL = "https://frontend-take-home-service.fetch.com";
  * @param param0 a Dog object
  * @returns a JSX element representing a dog on the homepage grid
  */
-function PuppyTile({ puppy }: { puppy: Dog }) {
+function PuppyTile(
+  { 
+    puppy, 
+    addSelected, 
+    alreadySelected, 
+    location 
+  }: 
+  { 
+    puppy: Dog; 
+    addSelected: React.Dispatch<React.SetStateAction<string[]>>; 
+    alreadySelected: string[];
+    location: Location;
+  }) {
   const SMALL_ICON = 20;
   const [selected, setSelected] = useState<boolean>(false);
 
+  // select a dog
   useEffect(() => {
     if (selected) {
-
+      if (!alreadySelected.includes(puppy.id)) {
+        addSelected([...alreadySelected, puppy.id]);
+      }
     } else {
-
+      if (alreadySelected.includes(puppy.id)) {
+        let idIndex = alreadySelected.indexOf(puppy.id);
+        let newArr = alreadySelected.splice(idIndex, 1);
+        addSelected(newArr);
+      }
     }
   }, [selected]);
 
   return (
     <div className="puppy-tile">
+      <div className="puppy-info-location">
+        <div className="puppy-info-icon">
+          <IconMapPin size={SMALL_ICON} />
+        </div>
+        <div className="puppy-info-text">
+          {location && location.city && location.state ? `${location.city}, ${location.state}` : puppy.zip_code}
+        </div>
+      </div>
       <div className="puppy-tile-img">
         <img src={puppy.img} alt={puppy.name} />
       </div>
@@ -76,45 +104,102 @@ interface SearchParams {
  * @param {boolean} descending - whether to sort descending or not
  * @returns a string formatted for a search parameter
  */
-function createSortString(sort: Sort) {
-  return `${sort.option}:${sort.descending ? "desc" : "asc"}`;
+function createSortString(option: string, descending: boolean) {
+  return `${option === "" ? "breed" : option}:${descending ? "desc" : "asc"}`;
 }
 
 export default function Home() {
   const { user } = useContext(AuthContext) as Auth;
   const navigate = useNavigate();
-
   let unfilteredPuppies: Dog[] = [];
-  let possibleBreeds: string[] = [];
   let zipcodes: string[] = [];
-  let prevPageLink: string | undefined = undefined;
-  let nextPageLink: string | undefined = undefined;
 
+  // state variables
   const [filteredPuppies, setPuppies] = useState<Dog[]>(unfilteredPuppies);
-  const [filteredBreeds, setBreeds] = useState<string[]>(possibleBreeds);
+  const [possibleBreeds, setPossibleBreeds] = useState<string[]>([]);
+  const [filteredBreeds, setBreeds] = useState<string[]>([]);
   const [filteredZipcodes, setZipcodes] = useState<string[]>(zipcodes);
-  const [selectedPuppies, setSelected] = useState<Dog[]>([]);
+  const [currentZipcodes, setCurrentZipcodes] = useState<string[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [selectedPuppies, setSelected] = useState<string[]>([]);
   const [minAge, setMinAge] = useState<number | undefined>();
   const [maxAge, setMaxAge] = useState<number | undefined>();
   const [dogIds, setDogIds] = useState<string[]>([]);
+  const [prevPageLink, setPrev] = useState<string | undefined>();
+  const [nextPageLink, setNext] = useState<string | undefined>();
   const [from, setFrom] = useState<string | undefined | null>();
-  const [sort, setSort] = useState<Sort>({
-    option: "breed",
-    descending: false
-  });
+  const [sortOption, setSortOption] = useState<string>("breed");
+  const [isSortDescending, setDescending] = useState<boolean>(false);
+
+  /**
+   * 
+   * @param param0 pagination props
+   * @returns {JSX.Element} pagination
+   */
+  function Pagination(
+    { 
+      prevLink, 
+      nextLink,
+    }: 
+    { 
+      prevLink?: string; 
+      nextLink?: string;
+    }) {
+    return (
+      <div className="pagination">
+        <div className={`pagination-button prev ${prevPageLink ? "visible" : "hidden"}`} aria-label="Previous" onClick={() => {
+          const params = new URLSearchParams(`${BASE_URL}/${prevLink}`);
+          const fromVal = params.get("from");
+          setFrom(fromVal);
+        }}>
+          <div className="pagination-arrow"><IconArrowLeft /></div>
+          <div className="pagination-text">Previous</div>
+        </div>
+        <div className={`pagination-button next ${nextPageLink ? "visible" : "hidden"}`} aria-label="Next" onClick={() => {
+          const params = new URLSearchParams(`${BASE_URL}/${nextLink}`);
+          const fromVal = params.get("from");
+          setFrom(fromVal);
+        }}>
+          <div className="pagination-text">Next</div>
+          <div className="pagination-arrow"><IconArrowRight /></div>
+        </div>
+      </div>
+    );
+  }
 
   const params: SearchParams = useMemo(() => {
     return {
       size: 24,
       breeds: filteredBreeds,
       zipCodes: filteredZipcodes,
-      sort: createSortString(sort),
+      sort: createSortString(sortOption, isSortDescending),
       from: from,
       ageMin: minAge,
       ageMax: maxAge
    }
-  }, [filteredBreeds, filteredZipcodes, sort, from, minAge, maxAge]) 
+  }, [filteredBreeds, filteredZipcodes, sortOption, isSortDescending, from, minAge, maxAge]);
+  
+  /**
+   * fetch all dog breeds
+   */
+  const fetchBreeds = async () => {
+    await axios.get(`${BASE_URL}/dogs/breeds`, {
+      withCredentials: true
+    }).then((res) => {
+      if (res.status === 200) {
+        setPossibleBreeds(res.data);
+      } else {
+        throw new Error("Could not retrieve dog breeds");
+      }
+    }).catch(error => {
+      throw new Error(`Could not retrieve dog breeds: ${error}`)
+    });
+  }
 
+  /**
+   * 
+   * @param {SearchParams} params parameters needed to refine search results
+   */
   const fetchDogsIds = async (params?: SearchParams) => {
     try {
       await axios.get(`${BASE_URL}/dogs/search`, {
@@ -125,10 +210,18 @@ export default function Home() {
         withCredentials: true,
       }).then((res) => {
         if (res.status === 200) {
-          console.log(res.data);
           setDogIds(res.data.resultIds);
-          if (res.data.next) nextPageLink = res.data.next;
-          if (res.data.prev) prevPageLink = res.data.prev;
+          if (res.data.next) {
+            setNext(res.data.next);
+          } else {
+            setNext(undefined);
+          }
+
+          if (res.data.prev) {
+            setPrev(res.data.prev);
+          } else {
+            setPrev(undefined);
+          }
         } else {
           navigate("/login");
         }
@@ -143,17 +236,14 @@ export default function Home() {
   // fetch the necessary dog ids on load
   useEffect(() => {
     fetchDogsIds();
+    fetchBreeds();
   }, []);
-
-  // set parameters
-  useEffect(() => {
-    fetchDogsIds(params);
-  }, [params]);
 
   // update dogs when parameters are changed
   useEffect(() => {
-
-  })
+    console.log(filteredBreeds)
+    fetchDogsIds(params);
+  }, [params]);
 
   // fetch the dogs that correspond to the ids
   useEffect(() => {
@@ -168,6 +258,7 @@ export default function Home() {
           if (res.status === 200) {
             unfilteredPuppies = res.data;
             setPuppies(res.data);
+            setCurrentZipcodes((res.data as Dog[]).map((puppy: Dog) => puppy.zip_code));
           } else {
             throw new Error("Could not retireve puppies :(");
           }
@@ -182,17 +273,44 @@ export default function Home() {
     fetchDogs();
   }, [dogIds]);
 
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        await axios.post(`${BASE_URL}/locations`, currentZipcodes, {
+          headers: {
+            "Content-Type": "application/json;charset=UTF-8",
+          },
+          withCredentials: true,
+        }).then((response) => {
+          if (response.status === 200) {
+            setLocations(response.data);
+          } else {
+            throw new Error("Could not load location");
+          }
+        }).catch((error) => {
+          throw new Error(`Could not load location data: ${error}`)
+        });
+      } catch (error) {
+        throw new Error(`Could not load location data: ${error}`);
+      }
+    }
+
+    fetchLocations();
+  }, [currentZipcodes]);
+
+
+
   if (!user) {
     navigate("/");
   }
 
   return (
     <div id="container">
-      <FilterMenu />
+      <FilterMenu breedData={possibleBreeds} onBreedChange={setBreeds} currentBreeds={filteredBreeds} />
       <div id="main-content">
         <div id="main-header">
           <h2 id="main-title">{user?.name}, find your perfect little puppy!</h2>
-          <Select id="sort-select" label="Sort by" onChange={setSort} data={[
+          <Select id="sort-select" label="Sort by" onChange={setSortOption} data={[
             {
               label: "Breed",
               value: "breed"
@@ -207,36 +325,13 @@ export default function Home() {
             }
           ]} />
         </div>
+        <Pagination prevLink={prevPageLink} nextLink={nextPageLink} />
         <div id="puppy-grid">
-          {filteredPuppies.map((puppy) => <PuppyTile puppy={puppy} key={puppy.id} />)}
+          {filteredPuppies.map((puppy, index) => <PuppyTile puppy={puppy} key={puppy.id} addSelected={setSelected} alreadySelected={selectedPuppies} location={locations[index]} />)}
         </div>
-        <div id="pagination">
-          {
-            prevPageLink && (
-              <div className="pagination-button" id="prev" aria-label="Previous" onClick={() => {
-                const params = new URLSearchParams(`${BASE_URL}/${nextPageLink}`);
-                const fromVal = params.get("from");
-                setFrom(fromVal);
-              }}>
-                <div className="pagination-arrow"><IconArrowLeft /></div>
-                <div className="pagination-text">Previous</div>
-              </div>
-            )
-          }
-          {
-            nextPageLink && (
-              <div className="pagination-button" id="next" aria-label="Next" onClick={() => {
-                const params = new URLSearchParams(`${BASE_URL}/${nextPageLink}`);
-                const fromVal = params.get("from");
-                setFrom(fromVal);
-              }}>
-                <div className="pagination-arrow"><IconArrowRight /></div>
-                <div className="pagination-text">Next</div>
-              </div>
-            )
-          }
-        </div>
+        <Pagination prevLink={prevPageLink} nextLink={nextPageLink} />
       </div>
+      <MatchButton />
     </div>
   );
 }

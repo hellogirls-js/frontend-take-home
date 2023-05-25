@@ -5,16 +5,13 @@ import { useEffect, useState } from "react";
  * @returns a select component
  */
 export default function Select({ id, label, data, onChange, inline = true }: { id: string; label: string; data: SelectOption[]; onChange?: any; inline?: boolean; }) {
-  const [value, setValue] = useState<string>("breed");
-  const [descending, setDescending] = useState<boolean>(false);
+  const [value, setValue] = useState<string>("");
 
   useEffect(() => {
-    console.log(value);
-    onChange({
-      option: value,
-      descending: descending
-    });
-  }, [value, descending]);
+    if (value !== "" && value !== undefined) {
+      onChange(value);
+    }
+  }, [value]);
 
   return (
     <div className="select-container">
