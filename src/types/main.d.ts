@@ -34,6 +34,7 @@ interface Auth {
 interface SelectOption {
   value: string;
   label: string;
+  default?: boolean
 }
 
 type SortOption = "breed" | "name" | "age";

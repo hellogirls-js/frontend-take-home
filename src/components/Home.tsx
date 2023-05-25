@@ -3,9 +3,10 @@ import FilterMenu from "../layout/FilterMenu";
 import { AuthContext } from "../context/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { IconArrowLeft, IconArrowRight, IconCake, IconDog, IconMapPin, IconStar } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowRight, IconCake, IconDog, IconMapPin, IconSortAscending, IconSortDescending, IconStar } from "@tabler/icons-react";
 import Select from "./utility/Select";
 import MatchButton from "../layout/MatchButton";
+import ErrorAlert from "./utility/ErrorAlert";
 
 const BASE_URL = "https://frontend-take-home-service.fetch.com";
 
@@ -38,8 +39,7 @@ function PuppyTile(
       }
     } else {
       if (alreadySelected.includes(puppy.id)) {
-        let idIndex = alreadySelected.indexOf(puppy.id);
-        let newArr = alreadySelected.splice(idIndex, 1);
+        const newArr: string[] = alreadySelected.filter(id => id !== puppy.id);
         addSelected(newArr);
       }
     }
@@ -47,14 +47,6 @@ function PuppyTile(
 
   return (
     <div className="puppy-tile">
-      <div className="puppy-info-location">
-        <div className="puppy-info-icon">
-          <IconMapPin size={SMALL_ICON} />
-        </div>
-        <div className="puppy-info-text">
-          {location && location.city && location.state ? `${location.city}, ${location.state}` : puppy.zip_code}
-        </div>
-      </div>
       <div className="puppy-tile-img">
         <img src={puppy.img} alt={puppy.name} />
       </div>
@@ -81,6 +73,14 @@ function PuppyTile(
             <div className="puppy-info-text">
               {puppy.age} {puppy.age === 1 ? "year" : "years"}
             </div>
+          </div>
+        </div>
+        <div className="puppy-tile-info-sec">
+          <div className="puppy-info-icon">
+            <IconMapPin size={SMALL_ICON} strokeWidth={1} />
+          </div>
+          <div className="puppy-info-text">
+            {location && location.city && location.state ? `${location.city}, ${location.state}` : puppy.zip_code}
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function Home() {
   const [filteredZipcodes, setZipcodes] = useState<string[]>(zipcodes);
   const [currentZipcodes, setCurrentZipcodes] = useState<string[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
-  const [selectedPuppies, setSelected] = useState<string[]>([]);
+  const [selectedPuppies, setSelectedPuppies] = useState<string[]>([]);
   const [minAge, setMinAge] = useState<number | undefined>();
   const [maxAge, setMaxAge] = useState<number | undefined>();
   const [dogIds, setDogIds] = useState<string[]>([]);
@@ -130,6 +130,8 @@ export default function Home() {
   const [from, setFrom] = useState<string | undefined | null>();
   const [sortOption, setSortOption] = useState<string>("breed");
   const [isSortDescending, setDescending] = useState<boolean>(false);
+  const [showMatchButton, setShowMatchButton] = useState<boolean>(false);
+  const [error, setError] = useState<string>();
 
   /**
    * 
@@ -187,12 +189,13 @@ export default function Home() {
       withCredentials: true
     }).then((res) => {
       if (res.status === 200) {
+        if (error) setError(undefined);
         setPossibleBreeds(res.data);
       } else {
-        throw new Error("Could not retrieve dog breeds");
+        setError("Could not retrieve dog breeds. :(")
       }
     }).catch(error => {
-      throw new Error(`Could not retrieve dog breeds: ${error}`)
+      setError("Could not retrieve dog breeds. :(");
     });
   }
 
@@ -229,19 +232,38 @@ export default function Home() {
         navigate("/login");
       })
     } catch (error) {
-      throw new Error(`${error}`);
+      navigate("/login");
+    }
+  }
+
+  const fetchMatch = async () => {
+    try {
+      await axios.post(`${BASE_URL}/dogs/match`, selectedPuppies, {
+        headers: {
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+        withCredentials: true
+      }).then((res) => {
+        if (res.status === 200) {
+          if (error) setError(undefined);
+          navigate(`/match/${res.data.match}`);
+        } else {
+          setError("Could not find a match :(");
+        }
+      })
+    } catch(error) {
+      setError("Could not find a match :(");
     }
   }
 
   // fetch the necessary dog ids on load
   useEffect(() => {
-    fetchDogsIds();
+    fetchDogsIds({ sort: createSortString(sortOption, isSortDescending)});
     fetchBreeds();
   }, []);
 
   // update dogs when parameters are changed
   useEffect(() => {
-    console.log(filteredBreeds)
     fetchDogsIds(params);
   }, [params]);
 
@@ -260,19 +282,20 @@ export default function Home() {
             setPuppies(res.data);
             setCurrentZipcodes((res.data as Dog[]).map((puppy: Dog) => puppy.zip_code));
           } else {
-            throw new Error("Could not retireve puppies :(");
+            setError("Could not retrieve puppies :(")
           }
         }).catch((error) => {
-          throw new Error(`Could not retrieve puppies: ${error}`)
+          setError("Could not retrieve puppies :(")
         })
       } catch (error) {
-        throw new Error(`${error}`);
+        setError("Could not retrieve puppies :(")
       }
     }
 
     fetchDogs();
   }, [dogIds]);
 
+  // fetch location data
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -298,40 +321,72 @@ export default function Home() {
     fetchLocations();
   }, [currentZipcodes]);
 
-
+  // show the match button if a puppy is selected
+  useEffect(() => {
+    console.log("updated selected puppies");
+    if (selectedPuppies.length > 0) {
+      setShowMatchButton(true);
+    } else {
+      console.log("im empty!");
+      setShowMatchButton(false);
+    }
+  }, [selectedPuppies])
 
   if (!user) {
     navigate("/");
   }
 
   return (
-    <div id="container">
-      <FilterMenu breedData={possibleBreeds} onBreedChange={setBreeds} currentBreeds={filteredBreeds} />
-      <div id="main-content">
-        <div id="main-header">
-          <h2 id="main-title">{user?.name}, find your perfect little puppy!</h2>
-          <Select id="sort-select" label="Sort by" onChange={setSortOption} data={[
-            {
-              label: "Breed",
-              value: "breed"
-            },
-            {
-              label: "Name",
-              value: "name"
-            },
-            {
-              label: "Age",
-              value: "age"
-            }
-          ]} />
+    <>
+      <div id="container">
+        <FilterMenu 
+          breedData={possibleBreeds} 
+          onBreedChange={setBreeds} 
+          currentBreeds={filteredBreeds}
+          onZipcodeChange={setZipcodes} 
+          currentZipcodes={filteredZipcodes}
+          onAgeMaxChange={setMaxAge}
+          onAgeMinChange={setMinAge}
+          currentAgeMax={maxAge}
+          currentAgeMin={minAge}
+        />
+        <div id="main-content">
+          {error && <ErrorAlert message={error} />}
+          <div id="main-header">
+            <h2 id="main-title">{user?.name}, find your perfect little puppy!</h2>
+            <Select 
+              id="sort-select" 
+              label="Sort by" 
+              onChange={setSortOption} 
+              data={[
+                {
+                  label: "Breed",
+                  value: "breed"
+                },
+                {
+                  label: "Name",
+                  value: "name"
+                },
+                {
+                  label: "Age",
+                  value: "age"
+                }
+              ]} 
+              defaultValue={sortOption}
+              icon={isSortDescending ? <IconSortDescending /> : <IconSortAscending />}
+              iconOnClick={() => { isSortDescending ? setDescending(false) : setDescending(true) }}
+            />
+          </div>
+          <Pagination prevLink={prevPageLink} nextLink={nextPageLink} />
+          <div id="puppy-grid">
+            {filteredPuppies.map((puppy, index) => 
+              <PuppyTile puppy={puppy} key={puppy.id} addSelected={setSelectedPuppies} alreadySelected={selectedPuppies} location={locations[index]} />
+            )}
+          </div>
+          <Pagination prevLink={prevPageLink} nextLink={nextPageLink} />
         </div>
-        <Pagination prevLink={prevPageLink} nextLink={nextPageLink} />
-        <div id="puppy-grid">
-          {filteredPuppies.map((puppy, index) => <PuppyTile puppy={puppy} key={puppy.id} addSelected={setSelected} alreadySelected={selectedPuppies} location={locations[index]} />)}
-        </div>
-        <Pagination prevLink={prevPageLink} nextLink={nextPageLink} />
+        <MatchButton displayCondition={showMatchButton} onClick={fetchMatch} />
       </div>
-      <MatchButton />
-    </div>
+    </>
   );
 }

@@ -10,6 +10,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './components/Home';
 import Footer from './layout/Footer';
+import Match from './components/Match';
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,11 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+    errorElement: <ErrorBoundary />
+  },
+  {
+    path: "/match/:id",
+    element: <Match />,
     errorElement: <ErrorBoundary />
   }
 ]);
