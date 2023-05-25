@@ -1,46 +1,34 @@
-# Getting Started with Create React App
+# Front-end Coding Assessment for Fetch
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Hello! Thank you for checking out this repository. There are two ways to access this site: locally or on the web.
 
-## Available Scripts
+## About the Project
+This project was written in React via Create-React-App. Icons used are by [Tabler icons](https://tabler-icons.io)
 
-In the project directory, you can run:
+## Access via URL
 
-### `npm start`
+This project is deployed at https://frontend-take-home.vercel.app via [Vercel](https://vercel.com)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Access via localhost
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+In order to access this project locally, follow these steps:
 
-### `npm test`
+1. Clone this repository to your local machine
+2. Navigate to the repository on your machine. Open your terminal and run `npm install`. This will install the necessary packages to run the website.
+3. Run `npm start`. If done correctly, the website should be running at `http://localhost:3000`.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Requirements
 
-### `npm run build`
+## Core requirements
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- [X] Users must be able to filter by breed
+- [X] Results should be paginated
+- [X] Results should be sorted alphabetically by breed by default. Users should be able to modify this sort to be ascending or descending.
+- [X] All fields of the Dog object (except for id) must be presented in some form
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Additional requirements
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- [X] Your site should be hosted on the internet
+- [X] Your source code should be stored in a git repository and hosted on the internet (i.e. Github)
+- [X] You should include any necessary documentation to run your site locally (You're reading it right now!)
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
